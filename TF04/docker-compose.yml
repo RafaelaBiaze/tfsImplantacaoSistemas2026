@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: technova-lb
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend1
+      - backend2
+      - backend3
+    networks:
+      - ecommerce-net
+
+  frontend:
+    build: ./frontend
+    container_name: technova-frontend
+    networks:
+      - ecommerce-net
+
+  backend1:
+    build: ./backend
+    environment:
+      - INSTANCE_ID=API-INSTANCIA-01
+    networks:
+      - ecommerce-net
+
+  backend2:
+    build: ./backend
+    environment:
+      - INSTANCE_ID=API-INSTANCIA-02
+    networks:
+      - ecommerce-net
+
+  backend3:
+    build: ./backend
+    environment:
+      - INSTANCE_ID=API-INSTANCIA-03
+    networks:
+      - ecommerce-net
+
+  admin:
+    image: nginx:alpine
+    volumes:
+      - ./admin/dashboard.html:/usr/share/nginx/html/index.html:ro
+    networks:
+      - ecommerce-net
+
+networks:
+  ecommerce-net:
+    driver: bridge
